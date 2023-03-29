@@ -33,6 +33,17 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public abstract class IridiumTeams<T extends Team, U extends IridiumUser<T>> extends IridiumCore {
 
+    @SuppressWarnings("rawtypes")
+    public static class Singleton {
+        private static IridiumTeams instance;
+
+        @SuppressWarnings("unchecked")
+        public static <T extends Team, U extends IridiumUser<T>> IridiumTeams<T, U> get(Class<T> class1,
+                Class<U> class2) {
+            return (IridiumTeams<T, U>) instance;
+        }
+    }
+
     private final Map<Integer, UserRank> userRanks = new HashMap<>();
     private final Map<String, Permission> permissionList = new HashMap<>();
     private final Map<String, Setting> settingsList = new HashMap<>();
@@ -46,6 +57,7 @@ public abstract class IridiumTeams<T extends Team, U extends IridiumUser<T>> ext
 
     public IridiumTeams(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
         super(loader, description, dataFolder, file);
+        Singleton.instance=this;
     }
 
     @Override
@@ -131,24 +143,28 @@ public abstract class IridiumTeams<T extends Team, U extends IridiumUser<T>> ext
 
     public void recalculateTeams() {
         Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
-            ListIterator<Integer> teams = getTeamManager().getTeams().stream().map(T::getId).collect(Collectors.toList()).listIterator();
+            ListIterator<Integer> teams = getTeamManager().getTeams().stream().map(T::getId)
+                    .collect(Collectors.toList()).listIterator();
             boolean locked = false;
             int counter = 0;
 
             @Override
             public void run() {
                 counter++;
-                int interval = recalculating ? getConfiguration().forceRecalculateInterval : getConfiguration().recalculateInterval;
+                int interval = recalculating ? getConfiguration().forceRecalculateInterval
+                        : getConfiguration().recalculateInterval;
                 if (counter % interval == 0) {
-                    if (locked) return;
+                    if (locked)
+                        return;
                     if (!teams.hasNext()) {
-                        teams = getTeamManager().getTeams().stream().map(T::getId).collect(Collectors.toList()).listIterator();
+                        teams = getTeamManager().getTeams().stream().map(T::getId).collect(Collectors.toList())
+                                .listIterator();
                         if (recalculating) {
                             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-                                if (!player.hasPermission(getCommands().recalculateCommand.permission)) continue;
+                                if (!player.hasPermission(getCommands().recalculateCommand.permission))
+                                    continue;
                                 player.sendMessage(StringUtils.color(getMessages().calculatingFinished
-                                        .replace("%prefix%", getConfiguration().prefix)
-                                ));
+                                        .replace("%prefix%", getConfiguration().prefix)));
                             }
                         }
                         recalculating = false;
@@ -234,18 +250,29 @@ public abstract class IridiumTeams<T extends Team, U extends IridiumUser<T>> ext
     }
 
     public void initializeSettings() {
-        addSetting(SettingType.TEAM_TYPE.getSettingKey(), getSettings().teamJoining, Arrays.asList("Private", "Public"));
-        addSetting(SettingType.VALUE_VISIBILITY.getSettingKey(), getSettings().teamValue, Arrays.asList("Private", "Public"));
-        addSetting(SettingType.MOB_SPAWNING.getSettingKey(), getSettings().mobSpawning, Arrays.asList("Enabled", "Disabled"));
-        addSetting(SettingType.LEAF_DECAY.getSettingKey(), getSettings().leafDecay, Arrays.asList("Enabled", "Disabled"));
+        addSetting(SettingType.TEAM_TYPE.getSettingKey(), getSettings().teamJoining,
+                Arrays.asList("Private", "Public"));
+        addSetting(SettingType.VALUE_VISIBILITY.getSettingKey(), getSettings().teamValue,
+                Arrays.asList("Private", "Public"));
+        addSetting(SettingType.MOB_SPAWNING.getSettingKey(), getSettings().mobSpawning,
+                Arrays.asList("Enabled", "Disabled"));
+        addSetting(SettingType.LEAF_DECAY.getSettingKey(), getSettings().leafDecay,
+                Arrays.asList("Enabled", "Disabled"));
         addSetting(SettingType.ICE_FORM.getSettingKey(), getSettings().iceForm, Arrays.asList("Enabled", "Disabled"));
-        addSetting(SettingType.FIRE_SPREAD.getSettingKey(), getSettings().fireSpread, Arrays.asList("Enabled", "Disabled"));
-        addSetting(SettingType.CROP_TRAMPLE.getSettingKey(), getSettings().cropTrample, Arrays.asList("Enabled", "Disabled"));
-        addSetting(SettingType.WEATHER.getSettingKey(), getSettings().weather, Arrays.asList("Server", "Sunny", "Raining"));
-        addSetting(SettingType.TIME.getSettingKey(), getSettings().time, Arrays.asList("Server", "Sunrise", "Day", "Morning", "Noon", "Sunset", "Night", "Midnight"));
-        addSetting(SettingType.ENTITY_GRIEF.getSettingKey(), getSettings().entityGrief, Arrays.asList("Enabled", "Disabled"));
-        addSetting(SettingType.TNT_DAMAGE.getSettingKey(), getSettings().tntDamage, Arrays.asList("Enabled", "Disabled"));
-        addSetting(SettingType.TEAM_VISITING.getSettingKey(), getSettings().visiting, Arrays.asList("Enabled", "Disabled"));
+        addSetting(SettingType.FIRE_SPREAD.getSettingKey(), getSettings().fireSpread,
+                Arrays.asList("Enabled", "Disabled"));
+        addSetting(SettingType.CROP_TRAMPLE.getSettingKey(), getSettings().cropTrample,
+                Arrays.asList("Enabled", "Disabled"));
+        addSetting(SettingType.WEATHER.getSettingKey(), getSettings().weather,
+                Arrays.asList("Server", "Sunny", "Raining"));
+        addSetting(SettingType.TIME.getSettingKey(), getSettings().time,
+                Arrays.asList("Server", "Sunrise", "Day", "Morning", "Noon", "Sunset", "Night", "Midnight"));
+        addSetting(SettingType.ENTITY_GRIEF.getSettingKey(), getSettings().entityGrief,
+                Arrays.asList("Enabled", "Disabled"));
+        addSetting(SettingType.TNT_DAMAGE.getSettingKey(), getSettings().tntDamage,
+                Arrays.asList("Enabled", "Disabled"));
+        addSetting(SettingType.TEAM_VISITING.getSettingKey(), getSettings().visiting,
+                Arrays.asList("Enabled", "Disabled"));
 
     }
 
@@ -256,16 +283,17 @@ public abstract class IridiumTeams<T extends Team, U extends IridiumUser<T>> ext
 
     public void initializeChatTypes() {
         addChatType(new ChatType(getConfiguration().noneChatAlias, player -> null));
-        addChatType(new ChatType(getConfiguration().teamChatAlias, player ->
-                getTeamManager().getTeamViaID(getUserManager().getUser(player).getActiveProfile().getTeamID()).map(t ->
-                        getTeamManager().getTeamMembers(t).stream().map(U::getPlayer).collect(Collectors.toList())
-                ).orElse(null))
-        );
+        addChatType(new ChatType(getConfiguration().teamChatAlias, player -> getTeamManager()
+                .getTeamViaID(getUserManager().getUser(player).getActiveProfile().getTeamID())
+                .map(t -> getTeamManager().getTeamMembers(t).stream().map(U::getPlayer).collect(Collectors.toList()))
+                .orElse(null)));
     }
 
     public void initializeEnhancements() {
-        for (Map.Entry<String, Enhancement<PotionEnhancementData>> enhancement : getEnhancements().potionEnhancements.entrySet()) {
-            if (!enhancement.getValue().enabled) continue;
+        for (Map.Entry<String, Enhancement<PotionEnhancementData>> enhancement : getEnhancements().potionEnhancements
+                .entrySet()) {
+            if (!enhancement.getValue().enabled)
+                continue;
             addEnhancement(enhancement.getKey(), enhancement.getValue());
         }
         addEnhancement("farming", getEnhancements().farmingEnhancement);
@@ -286,13 +314,15 @@ public abstract class IridiumTeams<T extends Team, U extends IridiumUser<T>> ext
     }
 
     public void addSetting(String key, Setting setting, List<String> values) {
-        if (!setting.enabled) return;
+        if (!setting.enabled)
+            return;
         setting.setValues(values);
         settingsList.put(key, setting);
     }
 
     public void addBankItem(BankItem bankItem) {
-        if (bankItem.isEnabled()) bankItemList.add(bankItem);
+        if (bankItem.isEnabled())
+            bankItemList.add(bankItem);
     }
 
     public void addChatType(ChatType chatType) {
@@ -307,11 +337,11 @@ public abstract class IridiumTeams<T extends Team, U extends IridiumUser<T>> ext
         sortingTypes.add(sortingType);
     }
 
-    public void addBstats(int pluginId){
+    public void addBstats(int pluginId) {
         new Metrics(this, pluginId);
     }
 
-    public void startUpdateChecker(int pluginId){
+    public void startUpdateChecker(int pluginId) {
         UpdateChecker.init(this, pluginId)
                 .checkEveryXHours(24)
                 .setDownloadLink(pluginId)

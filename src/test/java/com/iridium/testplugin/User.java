@@ -11,17 +11,4 @@ public class User extends IridiumUser<TestTeam> {
         setUuid(uuid);
         setName(username);
     }
-
-    IridiumUserProfile<TestTeam> profileCache = new IridiumUserProfile<>();
-
-    @Override
-    public IridiumUserProfile<TestTeam> getActiveProfile() {
-        return profileCache;
-    }
-
-    @Override
-    public void setActiveProfile(IridiumUserProfile<TestTeam> profile) {
-        this.profileCache = profile;
-        this.profile = profile.getId();
-    }
 }
